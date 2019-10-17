@@ -6,30 +6,63 @@ app.use(express.json());
 
 const projects = [];
 
-/*function verifyProjects(req, res, next){
+app.use((req, res, next)=>{
+    console.time('Process')
 
-    const { project } = projects[req.params.id];
+    console.log(`Method ${req.method} was called, URL ${req.url} was sollicited`);
 
-    if(!project){
-        return res.status(400).json('Não existe esse projeto');
+    console.timeEnd('Process')
+
+    return next()
+});
+
+function verifyInput(req, res, next){
+
+    if(!req.body.id ||!req.body.title ||!req.body.tasks){
+        return res.status(400).json({error: 'Information is missing'});
     }
 
-    req.project = project;
+    return next();
+}
+
+function verifyTitle(req, res, next){
+    if(!req.body.title){
+        return res.status(400).json({error: 'Title is missing'});
+    }
+
+    return next()
+}
+
+function verifyTasks(req, res, next){
+    const { tasks } = req.body;
+
+    if(!tasks){
+        return res.status(400).json({error: 'Please, insert a task'})
+    }
 
     return next();
-}*/
+}
+
+function verifyId(req, res, next){
+
+    if(!projects[req.params.id]){
+        return res.status(400).json({error: 'This project does not exists'})
+    }
+
+    return next();
+}
 
 app.get('/projects', (req, res) => {
     return res.json(projects);
 });
 
-app.get('/projects/:id', (req, res) => {
+app.get('/projects/:id',verifyId, (req, res) => {
     const { id } = req.params;
 
     res.json(projects[id]);
 });
 
-app.post('/projects', (req, res) => {
+app.post('/projects', verifyInput, (req, res) => {
     const { id, title, tasks } = req.body;
 
     projects.push({ id, title, tasks });
@@ -37,7 +70,7 @@ app.post('/projects', (req, res) => {
     return res.json(projects);
 });
 
-app.put('/projects/:id/', (req, res) => {
+app.put('/projects/:id/',verifyTitle, verifyId, (req, res) => {
     
     const { id } = req.params;
     const { title } = req.body;
@@ -47,7 +80,7 @@ app.put('/projects/:id/', (req, res) => {
     res.json(projects[id])
 });
 
-app.delete('/projects/:id', (req, res) =>{
+app.delete('/projects/:id', verifyId, (req, res) =>{
 
     const { id } = req.params;
 
@@ -56,7 +89,7 @@ app.delete('/projects/:id', (req, res) =>{
     return res.json(projects);
 });
 
-app.put('/projects/:id/tasks', (req, res) => {
+app.put('/projects/:id/tasks', verifyId, verifyTasks, (req, res) => {
 
     const { tasks } = req.body
     const { id } = req.params;
