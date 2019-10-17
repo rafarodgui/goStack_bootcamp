@@ -5,11 +5,14 @@ const app = express();
 app.use(express.json());
 
 const projects = [];
+let numberOfRequests = 0
 
 app.use((req, res, next)=>{
     console.time('Process')
 
     console.log(`Method ${req.method} was called, URL ${req.url} was sollicited`);
+
+    console.log(numberOfRequests)
 
     console.timeEnd('Process')
 
@@ -53,16 +56,19 @@ function verifyId(req, res, next){
 }
 
 app.get('/projects', (req, res) => {
+    numberOfRequests += 1
     return res.json(projects);
 });
 
 app.get('/projects/:id',verifyId, (req, res) => {
+    numberOfRequests += 1
     const { id } = req.params;
 
     res.json(projects[id]);
 });
 
 app.post('/projects', verifyInput, (req, res) => {
+    numberOfRequests += 1
     const { id, title, tasks } = req.body;
 
     projects.push({ id, title, tasks });
@@ -71,6 +77,7 @@ app.post('/projects', verifyInput, (req, res) => {
 });
 
 app.put('/projects/:id/',verifyTitle, verifyId, (req, res) => {
+    numberOfRequests += 1
     
     const { id } = req.params;
     const { title } = req.body;
@@ -81,6 +88,7 @@ app.put('/projects/:id/',verifyTitle, verifyId, (req, res) => {
 });
 
 app.delete('/projects/:id', verifyId, (req, res) =>{
+    numberOfRequests += 1
 
     const { id } = req.params;
 
@@ -90,6 +98,7 @@ app.delete('/projects/:id', verifyId, (req, res) =>{
 });
 
 app.put('/projects/:id/tasks', verifyId, verifyTasks, (req, res) => {
+    numberOfRequests += 1
 
     const { tasks } = req.body
     const { id } = req.params;
